@@ -1,2 +1,2 @@
 # identity
-Dymphony Future Experts Identity Project
+Symphony Future Experts Identity Project
