@@ -1,39 +1,30 @@
-const controllerHandler = (ctrlFunction) => async (req, res, next) => {
+const errorHandler = (ctrlFunction) => async (req, res, next) => {
+  let message = 'Internal Server Error';
   try {
-    await ctrlFunction(req, res, next);
+    return await ctrlFunction(req, res, next);
   } catch (error) {
-    console.error(error);
+    // console.log(error);
+    
     switch (error.name) {
       case 'SequelizeValidationError':
-        return res.status(400).json({
-          status: 'error',
-          message: 'Validation Error',
-          errors: error.errors.map(err => (err => ({
-            field: err.path,
-            message: err.message
-          })))
-        });
+        message = 'Validation Error';
+        break;
       case 'SequelizeUniqueConstraintError':
-        return res.status(409).json({
-          status: 'error',
-          message: 'Duplicate Entry',
-          errors: error.errors.map(err => (err => ({
-            field: err.path,
-            message: err.message
-          })))
-        });
+        message = 'Duplicate Entry';
+        break;
       case 'NotFoundError':
-        return res.status(404).json({
-          status: 'error',
-          message: error.message
-        });
+      case 'NotLoggedIn':
+      case 'Unauthorized':
+        message = error.message;
+        break;
       default:
-        return res.status(500).json({
-          status: 'error',
-          message: 'Internal Server Error'
-        });
+        break;
     }
   }
+  res.status(200).json({
+    error: true,
+    message
+  });
 }
 
-export default controllerHandler;
+export default errorHandler;

@@ -3,7 +3,8 @@ import sequelize from "/src/config/sequelize";
 import app from "./express.js";
 
 try {
-  await sequelize.authenticate()
+  await sequelize.authenticate();
+  await sequelize.sync({ force: false }); // Set to true to drop and recreate tables
   console.log('Database connection has been established successfully.');
 }
 catch (err) {

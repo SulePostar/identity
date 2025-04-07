@@ -2,6 +2,11 @@ import { DataTypes } from 'sequelize';
 import bcrypt from 'bcryptjs';
 import sequelize from '/src/config/sequelize.js';
 
+const userDto = (user) => {
+  const { id, username, firstName, lastName, email, status, role } = user;
+  return { id, username, firstName, lastName, email, status, role };
+};
+
 const User = sequelize.define('User',
   {
     id: {
@@ -9,18 +14,18 @@ const User = sequelize.define('User',
       primaryKey: true,
       autoIncrement: true
     },
-    username: { 
-      type: DataTypes.STRING, 
+    username: {
+      type: DataTypes.STRING,
       unique: true,
-      allowNull: false 
+      allowNull: false
     },
-    firstName: { 
-      type: DataTypes.STRING, 
-      allowNull: false 
+    firstName: {
+      type: DataTypes.STRING,
+      allowNull: false
     },
-    lastName: { 
-      type: DataTypes.STRING, 
-      allowNull: false 
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: false
     },
     fullName: {
       type: DataTypes.VIRTUAL,
@@ -35,6 +40,10 @@ const User = sequelize.define('User',
       type: DataTypes.STRING,
       allowNull: false
     },
+    status: {
+      type: DataTypes.STRING,
+      defaultValue: 'inactive'
+    },
     role: {
       type: DataTypes.STRING,
       defaultValue: 'user'
@@ -45,22 +54,16 @@ const User = sequelize.define('User',
     resetTokenExpiry: {
       type: DataTypes.DATE
     }
-  },
-  {
-    tableName: 'users',
-    timestamps: true,
-  },
-  {
-    hooks: {
-      beforeCreate: async (user) => {
-        user.password = await bcrypt.hash(user.password, 10);
-      },
-      beforeUpdate: async (user) => {
-        if (user.changed('password')) {
-          user.password = await bcrypt.hash(user.password, 10);
-        }
-      },
-    }
   });
 
-export default User;
+User.addHook('beforeCreate', async user => {
+  user.password = await bcrypt.hash(user.password, 10);
+});
+
+User.addHook('beforeUpdate', async user => {
+  if (user.changed('password')) {
+    user.password = await bcrypt.hash(user.password, 10);
+  }
+});
+
+export { User, userDto };
